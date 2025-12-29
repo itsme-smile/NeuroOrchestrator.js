@@ -1,9 +1,38 @@
 /*!
-  NeuroOrchestrator.js - Enhanced Version
-  --------------------------------------
-  License: All Rights Reserved
-
-  IMPROVEMENTS MADE:
+  NeuroOrchestrator.js - Enhanced Version with Advanced Features
+  ------------------------------------------------------------
+  
+  🚀 NEW FEATURES ADDED:
+  
+  1. AGENT PAUSE/RESUME
+     - Control long-running tasks with pause() and resume() methods
+     - Automatic task queuing when paused
+     - Event-driven pause/resume notifications
+     - Queue management and status monitoring
+  
+  2. QUICK VALIDATION
+     - Built-in validators for common output types
+     - validateOutput(value, type) - supports 'email', 'url', 'json'
+     - validateEmail(), validateURL(), validateJSON() - convenience methods
+     - validateMultipleOutputs() - batch validation
+     - Detailed validation results with error information
+  
+  3. BATCH PROCESSING
+     - Process multiple similar tasks efficiently
+     - Automatic task batching and concurrency control
+     - Retry mechanism for failed tasks
+     - Progress tracking and monitoring
+     - Pause/resume support during batch processing
+     - processBatch(tasks, options) method
+  
+  4. STREAMING RESPONSES
+     - Real-time output streaming for long responses
+     - Configurable chunk size and delay
+     - Buffer management and progress tracking
+     - Custom onStream callback for real-time updates
+     - streamResponse(input, context, options) method
+  
+  🛠️ ENHANCED FEATURES:
   - Fixed memory leaks with bounds and TTL
   - Added comprehensive error handling
   - Fixed animation cleanup issues
@@ -12,13 +41,146 @@
   - Improved UI with accessibility
   - Added configuration validation
   - Better vision API with fallbacks
-
-  USAGE:
+  - Performance monitoring and optimization
+  - Developer tools and debugging support
+  
+  📖 USAGE:
     1. Include this file in your HTML or import in JS
     2. Initialize: const orchestrator = new NeuroOrchestrator(container, options)
     3. Run: orchestrator.orchestrate("Your input").then(res => console.log(res))
-    4. Listen to events: orchestrator.on('stateChange', (state) => console.log(state))
-
+    4. Use new features:
+       - orchestrator.pause() / resume()
+       - orchestrator.validateEmail('test@example.com')
+       - orchestrator.processBatch(tasks)
+       - orchestrator.streamResponse('long input', {}, {onStream: callback})
+    5. Listen to events: orchestrator.on('stateChange', (state) => console.log(state))
+  
+  🎯 KEY METHODS:
+  
+  // Basic orchestration
+  orchestrator.orchestrate(input, context)
+  
+  // Pause/Resume
+  orchestrator.pause()
+  orchestrator.resume()
+  orchestrator.isPaused()
+  orchestrator.getPauseStatus()
+  
+  // Validation
+  orchestrator.validateEmail(email)
+  orchestrator.validateURL(url)
+  orchestrator.validateJSON(jsonString)
+  orchestrator.validateOutput(value, type)
+  orchestrator.validateMultipleOutputs(outputs)
+  
+  // Batch Processing
+  orchestrator.processBatch(tasks, options)
+  orchestrator.getBatchStatus()
+  orchestrator.cancelBatch()
+  
+  // Streaming
+  orchestrator.streamResponse(input, context, options)
+  orchestrator.getStreamStatus()
+  orchestrator.cancelStream()
+  
+  // Memory Management
+  orchestrator.getMemory()
+  orchestrator.getStats()
+  orchestrator.clearMemory(type)
+  orchestrator.setMemory(key, value)
+  
+  // Developer Tools
+  orchestrator.enableDebug(options)
+  orchestrator.getDebugInfo()
+  orchestrator.exportDebugData()
+  orchestrator.runHealthCheck()
+  
+  📋 EVENTS:
+  
+  // Basic events
+  'init', 'stateChange', 'complete', 'error', 'destroyed'
+  
+  // Pause/Resume events
+  'agentPaused', 'agentResumed', 'taskQueued'
+  
+  // Batch processing events
+  'batchStarted', 'batchCompleted', 'batchFailed', 'batchCancelled'
+  
+  // Streaming events
+  'streamStarted', 'streamChunk', 'streamCompleted', 'streamFailed', 'streamCancelled'
+  
+  // Vision events
+  'visionRequested', 'visionCaptured', 'visionFailed'
+  
+  // Memory events
+  'memoryCleared', 'memoryUpdated', 'memoryUpdateFailed'
+  
+  // Clarification events
+  'clarification', 'clarificationTimeout'
+  
+  // Developer events
+  'debugEnabled', 'debugDisabled', 'performanceMonitoringStarted', 'performanceMonitoringStopped'
+  
+  🔧 CONFIGURATION:
+  
+  const options = {
+    // Basic configuration
+    autoInit: true,
+    enableAnimations: true,
+    enableVision: true,
+    enableDebug: false,
+    
+    // Memory configuration
+    memoryConfig: {
+      maxShort: 100,
+      maxLong: 1000,
+      shortTTL: 3600000,  // 1 hour
+      longTTL: 86400000   // 24 hours
+    },
+    
+    // Safety configuration
+    safetyConfig: {
+      maxInputLength: 10000,
+      maxWords: 1000
+    },
+    
+    // Batch processing configuration
+    batchConfig: {
+      batchSize: 5,
+      concurrency: 3,
+      retryAttempts: 2,
+      delayBetweenBatches: 1000
+    },
+    
+    // Streaming configuration
+    streamingConfig: {
+      chunkSize: 100,
+      delay: 50,
+      enableBuffering: true,
+      bufferSize: 500
+    },
+    
+    // UI configuration
+    uiConfig: {
+      className: 'neuro-container',
+      animationInterval: 400,
+      maxDots: 4
+    }
+  };
+  
+  🌐 BROWSER COMPATIBILITY:
+  - Chrome 80+
+  - Firefox 75+
+  - Safari 13+
+  - Edge 80+
+  
+  📦 EXPORTS:
+  - NeuroOrchestrator (main class)
+  - MemoryManager, SafetyEngine, BrainRules, UIManager, VisionEngine
+  - EventEmitter, NeuroError, SecurityError, ValidationError
+  - PerformanceCache, PerformanceMonitor, DeveloperTools
+  - AgentController, QuickValidator, BatchProcessor, StreamingResponse, Semaphore
+  
   COPYRIGHT:
     All rights reserved.
     You may use this code for personal purposes only.
@@ -49,36 +211,59 @@ class ValidationError extends NeuroError {
 }
 
 // ----------------- EVENT EMITTER -----------------
+// Lightweight logger to control debug output (disabled by default)
+class Logger {
+  static enabled = false;
+
+  static debug(...args) {
+    if (Logger.enabled) {
+      console.debug('[Neuro] ', ...args);
+    }
+  }
+
+  static log(...args) {
+    if (Logger.enabled) console.log('[Neuro] ', ...args);
+  }
+
+  static warn(...args) {
+    if (Logger.enabled) console.warn('[Neuro] ', ...args);
+  }
+
+  static error(...args) {
+    console.error('[Neuro] ', ...args);
+  }
+}
+
 class EventEmitter {
   constructor() {
     this.events = {};
-    console.log('[EventEmitter] Initialized');
+    Logger.debug('[EventEmitter] Initialized');
   }
 
   on(event, listener) {
     if (!this.events[event]) this.events[event] = [];
     this.events[event].push(listener);
-    console.log(`[EventEmitter] Listener added for event: ${event}`);
+    Logger.debug(`[EventEmitter] Listener added for event: ${event}`);
     return () => this.off(event, listener);
   }
 
   off(event, listener) {
     if (!this.events[event]) return;
     this.events[event] = this.events[event].filter(l => l !== listener);
-    console.log(`[EventEmitter] Listener removed for event: ${event}`);
+    Logger.debug(`[EventEmitter] Listener removed for event: ${event}`);
   }
 
   emit(event, data) {
     if (!this.events[event]) {
-      console.log(`[EventEmitter] No listeners for event: ${event}`);
+      Logger.debug(`[EventEmitter] No listeners for event: ${event}`);
       return;
     }
-    console.log(`[EventEmitter] Emitting event: ${event}`, data);
+    Logger.debug(`[EventEmitter] Emitting event: ${event}`);
     this.events[event].forEach(listener => {
       try {
         listener(data);
       } catch (e) {
-        console.error(`Event listener error for ${event}:`, e);
+        Logger.error(`Event listener error for ${event}:`, e);
       }
     });
   }
@@ -86,10 +271,10 @@ class EventEmitter {
   removeAllListeners(event) {
     if (event) {
       delete this.events[event];
-      console.log(`[EventEmitter] All listeners removed for event: ${event}`);
+      Logger.debug(`[EventEmitter] All listeners removed for event: ${event}`);
     } else {
       this.events = {};
-      console.log('[EventEmitter] All listeners removed');
+      Logger.debug('[EventEmitter] All listeners removed');
     }
   }
 }
@@ -286,7 +471,7 @@ class PerformanceMonitor {
 // ----------------- MEMORY MANAGER -----------------
 class MemoryManager {
   constructor(config = {}) {
-    console.log('[MemoryManager] Initializing with config:', config);
+    Logger.debug('[MemoryManager] Initializing with config (redacted)');
     this.config = {
       maxShort: 100,
       maxLong: 1000,
@@ -318,24 +503,24 @@ class MemoryManager {
     this.optimizationInterval = 60000; // 1 minute
     this.lastOptimization = Date.now();
     
-    console.log('[MemoryManager] Initialized successfully with performance features');
+    Logger.debug('[MemoryManager] Initialized successfully with performance features');
   }
 
   storeShort(item) {
-    console.log('[MemoryManager] Storing short-term item:', item);
+    Logger.debug('[MemoryManager] Storing short-term item (redacted)');
     const entry = {
       ...item,
       timestamp: Date.now(),
       ttl: this.config.shortTTL
     };
     this.short.push(entry);
-    console.log(`[MemoryManager] Short-term memory count: ${this.short.length}`);
+    Logger.debug(`[MemoryManager] Short-term memory count: ${this.short.length}`);
     this._cleanupShort();
   }
 
   // Advanced Context Management Methods
   storeContext(key, value, options = {}) {
-    console.log(`[MemoryManager] Storing context: ${key}`, value);
+    Logger.debug(`[MemoryManager] Storing context: ${key}`);
     const entry = {
       key,
       value,
@@ -437,7 +622,7 @@ class MemoryManager {
   updateContext(key, value, options = {}) {
     const existing = this.context.get(key);
     if (!existing) {
-      console.warn(`[MemoryManager] Context key '${key}' not found for update`);
+      Logger.warn(`[MemoryManager] Context key '${key}' not found for update`);
       return false;
     }
 
@@ -453,14 +638,14 @@ class MemoryManager {
     }
     
     this.context.set(key, existing);
-    console.log(`[MemoryManager] Updated context: ${key}`, value);
+    Logger.debug(`[MemoryManager] Updated context: ${key}`);
     return true;
   }
 
   removeContext(key) {
     const removed = this.context.delete(key);
     if (removed) {
-      console.log(`[MemoryManager] Removed context: ${key}`);
+      Logger.debug(`[MemoryManager] Removed context: ${key}`);
     }
     return removed;
   }
@@ -473,7 +658,7 @@ class MemoryManager {
         count++;
       }
     }
-    console.log(`[MemoryManager] Cleared ${count} context items with tag: ${tag}`);
+    Logger.debug(`[MemoryManager] Cleared ${count} context items with tag: ${tag}`);
     return count;
   }
 
@@ -485,7 +670,7 @@ class MemoryManager {
         count++;
       }
     }
-    console.log(`[MemoryManager] Cleared ${count} context items from source: ${source}`);
+    Logger.debug(`[MemoryManager] Cleared ${count} context items from source: ${source}`);
     return count;
   }
 
@@ -713,16 +898,16 @@ class MemoryManager {
         this.context.set(key, entry);
       });
       
-      console.log(`[MemoryManager] Imported ${Object.keys(data.context).length} context items`);
+      Logger.debug(`[MemoryManager] Imported ${Object.keys(data.context).length} context items`);
       return true;
     } catch (error) {
-      console.error('[MemoryManager] Failed to import context:', error);
+      Logger.error('[MemoryManager] Failed to import context:', error);
       return false;
     }
   }
 
   storeConversation(sessionId, message, options = {}) {
-    console.log(`[MemoryManager] Storing conversation: ${sessionId}`, message);
+    Logger.debug(`[MemoryManager] Storing conversation: ${sessionId}`);
     if (!this.conversations.has(sessionId)) {
       this.conversations.set(sessionId, {
         messages: [],
@@ -760,7 +945,7 @@ class MemoryManager {
   }
 
   storePreference(key, value, options = {}) {
-    console.log(`[MemoryManager] Storing preference: ${key}`, value);
+    Logger.debug(`[MemoryManager] Storing preference: ${key}`);
     const entry = {
       key,
       value,
@@ -882,26 +1067,26 @@ class MemoryManager {
   }
 
   storeLong(item) {
-    console.log('[MemoryManager] Storing long-term item:', item);
+    Logger.debug('[MemoryManager] Storing long-term item (redacted)');
     const entry = {
       ...item,
       timestamp: Date.now(),
       ttl: this.config.longTTL
     };
     this.long.push(entry);
-    console.log(`[MemoryManager] Long-term memory count: ${this.long.length}`);
+    Logger.debug(`[MemoryManager] Long-term memory count: ${this.long.length}`);
     this._cleanupLong();
   }
 
   storeUser(key, value) {
-    console.log(`[MemoryManager] Storing user data for key: ${key}`);
+    Logger.debug(`[MemoryManager] Storing user data for key: ${key}`);
     // Prevent prototype pollution
     if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
-      console.error('[MemoryManager] Blocked prototype pollution attempt');
+      Logger.error('[MemoryManager] Blocked prototype pollution attempt');
       throw new SecurityError('Invalid user key');
     }
     this.user.set(key, value);
-    console.log(`[MemoryManager] User data stored. Map size: ${this.user.size}`);
+    Logger.debug(`[MemoryManager] User data stored. Map size: ${this.user.size}`);
   }
 
   getUser(key) {
@@ -909,27 +1094,27 @@ class MemoryManager {
   }
 
   load() {
-    console.log('[MemoryManager] Loading memory state');
+    Logger.debug('[MemoryManager] Loading memory state');
     this._cleanupAll();
     const state = {
       short: this.short.map(e => ({ ...e })), // Return copies
       long: this.long.map(e => ({ ...e })),
       user: Object.fromEntries(this.user)
     };
-    console.log(`[MemoryManager] Memory loaded. Short: ${state.short.length}, Long: ${state.long.length}, User: ${Object.keys(state.user).length}`);
+    Logger.debug(`[MemoryManager] Memory loaded. Short: ${state.short.length}, Long: ${state.long.length}, User: ${Object.keys(state.user).length}`);
     return state;
   }
 
   clearShort() {
-    console.log('[MemoryManager] Clearing short-term memory');
+    Logger.debug('[MemoryManager] Clearing short-term memory');
     this.short = [];
   }
   clearLong() {
-    console.log('[MemoryManager] Clearing long-term memory');
+    Logger.debug('[MemoryManager] Clearing long-term memory');
     this.long = [];
   }
   clearUser() {
-    console.log('[MemoryManager] Clearing user memory');
+    Logger.debug('[MemoryManager] Clearing user memory');
     this.user.clear();
   }
 
@@ -971,13 +1156,13 @@ class MemoryManager {
       longAge: this.long.length > 0 ?
         Date.now() - this.long[0].timestamp : 0
     };
-    console.log('[MemoryManager] Stats:', stats);
+    Logger.debug('[MemoryManager] Stats:', stats);
     return stats;
   }
 
   // Enhanced Memory with Semantic Search
   async semanticSearch(query, options = {}) {
-    console.log('[MemoryManager] Performing semantic search for:', query);
+    Logger.debug('[MemoryManager] Performing semantic search (redacted) - length: ' + (typeof query === 'string' ? query.length : 'n/a'));
     
     const {
       limit = 10,
@@ -1020,8 +1205,8 @@ class MemoryManager {
     // Apply limit
     const limitedResults = results.slice(0, limit);
     
-    console.log('[MemoryManager] Semantic search completed:', {
-      query,
+    Logger.debug('[MemoryManager] Semantic search completed', {
+      queryLength: typeof query === 'string' ? query.length : 'n/a',
       found: limitedResults.length,
       total: results.length
     });
@@ -1160,7 +1345,7 @@ class MemoryManager {
 
   // Memory optimization methods
   optimizeMemory() {
-    console.log('[MemoryManager] Optimizing memory...');
+    Logger.debug('[MemoryManager] Optimizing memory...');
     
     // Clean up expired items
     this._cleanupAll();
@@ -1175,11 +1360,11 @@ class MemoryManager {
       this._compressConversations();
     }
     
-    console.log('[MemoryManager] Memory optimization complete');
+    Logger.debug('[MemoryManager] Memory optimization complete');
   }
 
   _compressLongTermMemory() {
-    console.log('[MemoryManager] Compressing long-term memory');
+    Logger.debug('[MemoryManager] Compressing long-term memory');
     
     // Sort by relevance and keep only most relevant
     this.long.sort((a, b) => {
@@ -1192,11 +1377,11 @@ class MemoryManager {
     const keepCount = Math.floor(this.long.length * 0.8);
     this.long = this.long.slice(0, keepCount);
     
-    console.log(`[MemoryManager] Compressed long-term memory to ${this.long.length} items`);
+    Logger.debug(`[MemoryManager] Compressed long-term memory to ${this.long.length} items`);
   }
 
   _compressConversations() {
-    console.log('[MemoryManager] Compressing conversations');
+    Logger.debug('[MemoryManager] Compressing conversations');
     
     // Keep only recent conversations
     const now = Date.now();
@@ -1219,7 +1404,7 @@ class MemoryManager {
       this.conversations.delete(sessionId);
     });
     
-    console.log(`[MemoryManager] Compressed conversations to ${this.conversations.size} sessions`);
+    Logger.debug(`[MemoryManager] Compressed conversations to ${this.conversations.size} sessions`);
   }
 
   // Memory analytics
@@ -1236,7 +1421,7 @@ class MemoryManager {
       cacheStats: this.cache ? this.cache.getStats() : null
     };
     
-    console.log('[MemoryManager] Analytics:', analytics);
+    Logger.debug('[MemoryManager] Analytics:', analytics);
     return analytics;
   }
 
@@ -1247,7 +1432,7 @@ class MemoryManager {
     const now = Date.now();
     if (now - this.lastOptimization < this.optimizationInterval) return;
     
-    console.log('[MemoryManager] Starting performance optimization...');
+    Logger.debug('[MemoryManager] Starting performance optimization...');
     this.monitor.startTimer('optimization');
     
     try {
@@ -1270,11 +1455,11 @@ class MemoryManager {
       this.lastOptimization = now;
       const duration = this.monitor.endTimer('optimization');
       
-      console.log(`[MemoryManager] Optimization completed in ${duration.toFixed(2)}ms`);
+      Logger.debug(`[MemoryManager] Optimization completed in ${duration.toFixed(2)}ms`);
       this.monitor.incrementCounter('optimizations');
       
     } catch (error) {
-      console.error('[MemoryManager] Optimization failed:', error);
+      Logger.error('[MemoryManager] Optimization failed:', error);
       this.monitor.endTimer('optimization');
     }
   }
@@ -1306,7 +1491,7 @@ class MemoryManager {
     
     toRemove.forEach(key => this.context.delete(key));
     if (toRemove.length > 0) {
-      console.log(`[MemoryManager] Removed ${toRemove.length} duplicate context items`);
+      Logger.debug(`[MemoryManager] Removed ${toRemove.length} duplicate context items`);
     }
   }
 
@@ -1350,7 +1535,7 @@ class MemoryManager {
     });
     
     if (removedCount > 0) {
-      console.log(`[MemoryManager] Compressed ${removedCount} old memory items`);
+      Logger.debug(`[MemoryManager] Compressed ${removedCount} old memory items`);
     }
   }
 
@@ -1380,7 +1565,7 @@ class MemoryManager {
     }
     
     const duration = this.monitor.endTimer('batchStore');
-    console.log(`[MemoryManager] Batch stored ${items.length} items in ${duration.toFixed(2)}ms`);
+    Logger.debug(`[MemoryManager] Batch stored ${items.length} items in ${duration.toFixed(2)}ms`);
     
     return results;
   }
@@ -1394,7 +1579,7 @@ class MemoryManager {
     }));
     
     const duration = this.monitor.endTimer('batchSearch');
-    console.log(`[MemoryManager] Batch searched ${queries.length} queries in ${duration.toFixed(2)}ms`);
+    Logger.debug(`[MemoryManager] Batch searched ${queries.length} queries in ${duration.toFixed(2)}ms`);
     
     return results;
   }
@@ -1409,7 +1594,7 @@ class MemoryManager {
       recommendations: this._getPerformanceRecommendations()
     };
     
-    console.log('[MemoryManager] Memory profile:', profile);
+    Logger.debug('[MemoryManager] Memory profile:', profile);
     return profile;
   }
 
@@ -1462,7 +1647,7 @@ class MemoryManager {
       optimizationStatus: this._checkOptimizationStatus()
     };
     
-    console.log('[MemoryManager] Diagnostics:', diagnostics);
+    Logger.debug('[MemoryManager] Diagnostics:', diagnostics);
     return diagnostics;
   }
 
@@ -1609,11 +1794,11 @@ class MemoryManager {
         });
       }
       
-      console.log(`[MemoryManager] Imported ${JSON.stringify(decompressed).length} bytes of data`);
+      Logger.debug(`[MemoryManager] Imported ${JSON.stringify(decompressed).length} bytes of data`);
       return true;
       
     } catch (error) {
-      console.error('[MemoryManager] Import failed:', error);
+      Logger.error('[MemoryManager] Import failed:', error);
       return false;
     }
   }
@@ -1726,7 +1911,7 @@ class MemoryManager {
 // ----------------- SAFETY ENGINE -----------------
 class SafetyEngine {
   constructor(config = {}) {
-    console.log('[SafetyEngine] Initializing with config:', config);
+    Logger.debug('[SafetyEngine] Initializing with config (redacted)');
     this.config = {
       blockedPatterns: [
         /jailbreak/i,
@@ -1745,29 +1930,29 @@ class SafetyEngine {
       allowedProtocols: ['http', 'https', 'data', 'blob'],
       ...config
     };
-    console.log('[SafetyEngine] Initialized with', this.config.blockedPatterns.length, 'blocked patterns');
+    Logger.debug('[SafetyEngine] Initialized with blocked patterns count: ' + this.config.blockedPatterns.length);
   }
 
   validate(input, context = {}) {
-    console.log('[SafetyEngine] Validating input:', input.substring(0, 50));
-    console.log('[SafetyEngine] Context:', context);
+    Logger.debug('[SafetyEngine] Validating input (redacted preview)');
+    Logger.debug('[SafetyEngine] Context (redacted)');
     
     // Type check
     if (typeof input !== 'string') {
-      console.error('[SafetyEngine] Type validation failed');
+      Logger.error('[SafetyEngine] Type validation failed');
       throw new ValidationError('Input must be a string');
     }
 
     // Length check
     if (input.length > this.config.maxInputLength) {
-      console.error(`[SafetyEngine] Length validation failed: ${input.length} > ${this.config.maxInputLength}`);
+      Logger.error(`[SafetyEngine] Length validation failed: ${input.length} > ${this.config.maxInputLength}`);
       throw new ValidationError(`Input exceeds maximum length of ${this.config.maxInputLength}`);
     }
 
     // Word count check
     const wordCount = input.trim().split(/\s+/).length;
     if (wordCount > this.config.maxWords) {
-      console.error(`[SafetyEngine] Word count validation failed: ${wordCount} > ${this.config.maxWords}`);
+      Logger.error(`[SafetyEngine] Word count validation failed: ${wordCount} > ${this.config.maxWords}`);
       throw new ValidationError(`Input exceeds maximum word count of ${this.config.maxWords}`);
     }
 
@@ -1775,48 +1960,51 @@ class SafetyEngine {
     const sanitized = this.sanitize(input);
     const blockedPattern = this.config.blockedPatterns.find(pattern => pattern.test(sanitized));
     if (blockedPattern) {
-      console.error(`[SafetyEngine] Blocked pattern found: ${blockedPattern}`);
+      Logger.error(`[SafetyEngine] Blocked pattern found: ${blockedPattern}`);
       throw new SecurityError('Blocked unsafe input pattern');
     }
 
     // Context validation
     if (context.user && typeof context.user !== 'object') {
-      console.error('[SafetyEngine] Context validation failed');
+      Logger.error('[SafetyEngine] Context validation failed');
       throw new ValidationError('Invalid user context');
     }
 
-    console.log('[SafetyEngine] Validation passed');
+    Logger.debug('[SafetyEngine] Validation passed');
     return sanitized;
   }
 
   sanitize(input) {
-    console.log('[SafetyEngine] Sanitizing input:', input.substring(0, 50));
-    // Basic HTML entity encoding - FIXED: proper entity encoding
-    const sanitized = input
-      .replace(/&/g, '&')
-      .replace(/</g, '<')
-      .replace(/>/g, '>')
-      .replace(/"/g, '"')
-      .replace(/'/g, "'");
-    console.log('[SafetyEngine] Sanitized result:', sanitized.substring(0, 50));
+    // Lightly log that sanitization occurred (no user data logged unless debug enabled)
+    Logger.debug('[SafetyEngine] Sanitizing input (first 50 chars redacted)');
+
+    // Proper HTML entity encoding
+    const sanitized = String(input)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+
+    Logger.debug('[SafetyEngine] Sanitized result (length): ' + sanitized.length);
     return sanitized;
   }
 
   validateURL(url) {
-    console.log(`[SafetyEngine] Validating URL: ${url}`);
+    Logger.debug('[SafetyEngine] Validating URL (redacted)');
     try {
       const parsed = new URL(url);
       const protocol = parsed.protocol.replace(':', '');
-      console.log(`[SafetyEngine] URL protocol: ${protocol}`);
+      Logger.debug(`[SafetyEngine] URL protocol: ${protocol}`);
       
       if (!this.config.allowedProtocols.includes(protocol)) {
-        console.error(`[SafetyEngine] Protocol not allowed: ${protocol}`);
+        Logger.error(`[SafetyEngine] Protocol not allowed: ${protocol}`);
         throw new SecurityError('Protocol not allowed');
       }
-      console.log('[SafetyEngine] URL validation passed');
+      Logger.debug('[SafetyEngine] URL validation passed');
       return true;
     } catch (e) {
-      console.error(`[SafetyEngine] URL validation failed: ${e.message}`);
+      Logger.error(`[SafetyEngine] URL validation failed: ${e.message}`);
       throw new SecurityError('Invalid URL');
     }
   }
@@ -1919,7 +2107,7 @@ class BrainRules {
 // ----------------- UI MANAGER -----------------
 class UIManager {
   constructor(container, config = {}) {
-    console.log('[UIManager] Initializing with container:', container, 'config:', config);
+    Logger.debug('[UIManager] Initializing with container (redacted)');
     this.container = container || document.body;
     this.config = {
       className: 'neuro-container',
@@ -2112,7 +2300,7 @@ class UIManager {
   }
 
   setState(state, data = {}) {
-    console.log(`[UIManager] Setting state to: ${state}`, data);
+    Logger.debug(`[UIManager] Setting state to: ${state}`);
     this.cleanupCurrentState();
 
     const states = {
@@ -2128,29 +2316,29 @@ class UIManager {
     const renderer = states[state];
     if (renderer) {
       this.currentAnimation = renderer(data);
-      console.log(`[UIManager] State ${state} rendered successfully`);
+      Logger.debug(`[UIManager] State ${state} rendered successfully`);
     } else {
-      console.warn(`[UIManager] Unknown state: ${state}`);
+      Logger.warn(`[UIManager] Unknown state: ${state}`);
     }
   }
 
   cleanupCurrentState() {
-    console.log('[UIManager] Cleaning up current state');
+    Logger.debug('[UIManager] Cleaning up current state');
     if (this.currentAnimation?.cleanup) {
       try {
         this.currentAnimation.cleanup();
-        console.log('[UIManager] Animation cleanup completed');
+        Logger.debug('[UIManager] Animation cleanup completed');
       } catch (e) {
-        console.warn('Animation cleanup failed:', e);
+        Logger.warn('Animation cleanup failed:', e);
       }
     }
     this.currentAnimation = null;
     this.element.innerHTML = '';
-    console.log('[UIManager] State cleanup completed');
+    Logger.debug('[UIManager] State cleanup completed');
   }
 
   _renderIdle() {
-    console.log('[UIManager] Rendering idle state');
+    Logger.debug('[UIManager] Rendering idle state');
     const span = document.createElement('span');
     span.textContent = 'Ready';
     span.className = 'neuro-state';
@@ -2159,7 +2347,7 @@ class UIManager {
   }
 
   _renderThinking() {
-    console.log('[UIManager] Rendering thinking state');
+    Logger.debug('[UIManager] Rendering thinking state');
     const span = document.createElement('span');
     span.className = 'neuro-state';
     let count = 0;
@@ -2174,14 +2362,14 @@ class UIManager {
     
     return {
       cleanup: () => {
-        console.log('[UIManager] Cleaning up thinking animation');
+        Logger.debug('[UIManager] Cleaning up thinking animation');
         clearInterval(interval);
       }
     };
   }
 
   _renderWriting() {
-    console.log('[UIManager] Rendering writing state');
+    Logger.debug('[UIManager] Rendering writing state');
     const span = document.createElement('span');
     span.className = 'neuro-state';
     span.textContent = 'Writing';
@@ -2200,7 +2388,7 @@ class UIManager {
 
     return {
       cleanup: () => {
-        console.log('[UIManager] Cleaning up writing animation');
+        Logger.debug('[UIManager] Cleaning up writing animation');
         if (frameId) cancelAnimationFrame(frameId);
         span.style.transform = '';
       }
@@ -2270,7 +2458,9 @@ class UIManager {
     
     // Create canvas for drawing highlights
     const canvas = document.createElement('canvas');
-    canvas.id = 'neuro-highlight-canvas';
+    // generate a unique id to avoid collisions if multiple instances are present
+    const uniqueId = 'neuro-highlight-canvas-' + Math.floor(Math.random() * 1e9);
+    canvas.id = uniqueId;
     canvas.style.cssText = `
       position: absolute;
       top: 0;
@@ -2352,7 +2542,7 @@ class UIManager {
     const overlay = document.querySelector('.neuro-overlay');
     if (overlay) {
       overlay.style.display = 'block';
-      const canvas = document.getElementById('neuro-highlight-canvas');
+      const canvas = overlay.querySelector('canvas');
       if (canvas) {
         this._drawHighlights(canvas, rects, options);
       }
@@ -2367,7 +2557,7 @@ class UIManager {
   }
 
   static async analyzeImage(dataUrl, prompt = 'Describe this image') {
-    console.log('[VisionEngine] Analyzing image with prompt:', prompt);
+    Logger.debug('[VisionEngine] Analyzing image with prompt (redacted)');
     
     // Placeholder for actual AI vision analysis
     // In a real implementation, this would call a vision API
@@ -2377,12 +2567,12 @@ class UIManager {
       highlights: this._detectErrorPatterns(dataUrl)
     };
     
-    console.log('[VisionEngine] Image analysis complete:', analysis);
+    Logger.debug('[VisionEngine] Image analysis complete');
     return analysis;
   }
 
   static _detectErrorPatterns(dataUrl) {
-    console.log('[VisionEngine] Detecting error patterns in image');
+    Logger.debug('[VisionEngine] Detecting error patterns in image');
     
     // Create temporary image to analyze
     const img = new Image();
@@ -2411,12 +2601,12 @@ class UIManager {
         const textRegions = this._findTextRegions(data, canvas.width, canvas.height);
         highlights.push(...textRegions);
         
-        console.log('[VisionEngine] Detected highlights:', highlights);
+        Logger.debug('[VisionEngine] Detected highlights');
         resolve(highlights);
       };
       
       img.onerror = () => {
-        console.warn('[VisionEngine] Image analysis failed');
+        Logger.warn('[VisionEngine] Image analysis failed');
         resolve([]);
       };
     });
@@ -2504,7 +2694,7 @@ class UIManager {
 
   // Smart UI Generation Methods
   renderSmartUI(data) {
-    console.log('[UIManager] Rendering smart UI with data:', data);
+    Logger.debug('[UIManager] Rendering smart UI with data');
     this.cleanupCurrentState();
     
     const container = document.createElement('div');
@@ -2702,14 +2892,14 @@ class UIManager {
   }
 
   askQuestion(question, options) {
-    console.log('[UIManager] Asking question:', question, 'options:', options);
+    Logger.debug('[UIManager] Asking question');
     return new Promise((resolve, reject) => {
       this.currentPromise = { resolve, reject };
       this.setState('asking', { question, options });
 
       // Timeout after 30 seconds
       const timeout = setTimeout(() => {
-        console.log('[UIManager] Question timeout');
+        Logger.debug('[UIManager] Question timeout');
         this.cleanupCurrentState();
         reject(new Error('Question timeout'));
       }, 30000);
@@ -2763,7 +2953,7 @@ class UIManager {
       try {
         listener(data);
       } catch (e) {
-        console.error(`Event listener error for ${event}:`, e);
+        Logger.error(`Event listener error for ${event}:`, e);
       }
     });
   }
@@ -2947,9 +3137,14 @@ class DeveloperTools {
     };
     
     // Output to console
-    const consoleMethod = level === 'error' ? console.error :
-                         level === 'warn' ? console.warn : console.log;
-    consoleMethod(`[NeuroOrchestrator ${level.toUpperCase()}] ${message}`, data);
+    // Route logs through Logger so they respect the global debug setting
+    if (level === 'error') {
+      Logger.error(`[NeuroOrchestrator ${level.toUpperCase()}] ${message}`, data);
+    } else if (level === 'warn') {
+      Logger.warn(`[NeuroOrchestrator ${level.toUpperCase()}] ${message}`, data);
+    } else {
+      Logger.debug(`[NeuroOrchestrator ${level.toUpperCase()}] ${message}`, data);
+    }
     
     // Store in profiler if active
     if (this.profiler) {
@@ -3073,7 +3268,7 @@ class DeveloperTools {
       };
       
       this.log('info', 'Debug console opened. Access via window.__NeuroOrchestratorDebug');
-      console.log('[NeuroOrchestrator] Debug console available at window.__NeuroOrchestratorDebug');
+      Logger.debug('[NeuroOrchestrator] Debug console available at window.__NeuroOrchestratorDebug');
     }
   }
 }
@@ -3188,6 +3383,76 @@ class InteractionRecorder {
   }
 }
 
+// ----------------- AGENT CONTROLLER -----------------
+class AgentController {
+  constructor(orchestrator) {
+    this.orchestrator = orchestrator;
+    this.paused = false;
+    this.pausePromise = null;
+    this.resumeResolve = null;
+    this.currentTask = null;
+    this.taskQueue = [];
+  }
+
+  pause() {
+    Logger.debug('[AgentController] Pausing agent');
+    if (this.paused) {
+      Logger.debug('[AgentController] Already paused');
+      return;
+    }
+    
+    this.paused = true;
+    this.pausePromise = new Promise((resolve) => {
+      this.resumeResolve = resolve;
+    });
+    
+    this.orchestrator.emit('agentPaused', { timestamp: Date.now() });
+    Logger.debug('[AgentController] Agent paused successfully');
+  }
+
+  resume() {
+    Logger.debug('[AgentController] Resuming agent');
+    if (!this.paused) {
+      Logger.debug('[AgentController] Not paused');
+      return;
+    }
+    
+    this.paused = false;
+    if (this.resumeResolve) {
+      this.resumeResolve();
+      this.resumeResolve = null;
+    }
+    
+    this.orchestrator.emit('agentResumed', { timestamp: Date.now() });
+    Logger.debug('[AgentController] Agent resumed successfully');
+  }
+
+  async waitForResume() {
+    if (this.paused && this.pausePromise) {
+      Logger.debug('[AgentController] Waiting for resume...');
+      await this.pausePromise;
+      Logger.debug('[AgentController] Resume confirmed');
+    }
+  }
+
+  isPaused() {
+    return this.paused;
+  }
+
+  clearQueue() {
+    this.taskQueue = [];
+    this.orchestrator.emit('queueCleared', { timestamp: Date.now() });
+  }
+
+  getQueueStatus() {
+    return {
+      paused: this.paused,
+      queueLength: this.taskQueue.length,
+      currentTask: this.currentTask
+    };
+  }
+}
+
 // ----------------- ORCHESTRATOR -----------------
 class NeuroOrchestrator extends EventEmitter {
   constructor(container, options = {}) {
@@ -3210,6 +3475,9 @@ class NeuroOrchestrator extends EventEmitter {
     this.isProcessing = false;
     this.memory = new MemoryManager(this.config.memoryConfig);
     this.safety = new SafetyEngine(this.config.safetyConfig);
+    
+    // Initialize agent controller for pause/resume functionality
+    this.agentController = new AgentController(this);
     
     // Developer tools
     this.developerTools = new DeveloperTools(this);
@@ -3235,21 +3503,21 @@ class NeuroOrchestrator extends EventEmitter {
   }
 
   init() {
-    console.log('[NeuroOrchestrator] Initializing...');
+    Logger.debug('[NeuroOrchestrator] Initializing...');
     this.emit('init', { timestamp: Date.now() });
     if (this.ui) {
       this.ui.setState('idle');
     }
-    console.log('[NeuroOrchestrator] Initialization complete');
+    Logger.debug('[NeuroOrchestrator] Initialization complete');
   }
 
   async orchestrate(input, context = {}) {
-    console.log('[NeuroOrchestrator] Starting orchestration with input:', input.substring(0, 50));
-    console.log('[NeuroOrchestrator] Context:', context);
+Logger.debug('[NeuroOrchestrator] Starting orchestration with input (redacted)');
+Logger.debug('[NeuroOrchestrator] Context (redacted)');
     
     // Generate session ID if not provided
     const sessionId = context.sessionId || `session_${Date.now()}`;
-    console.log('[NeuroOrchestrator] Session ID:', sessionId);
+    Logger.debug('[NeuroOrchestrator] Session ID:', sessionId);
     
     // Performance monitoring
     const startTime = Date.now();
@@ -3264,9 +3532,17 @@ class NeuroOrchestrator extends EventEmitter {
       });
     }
     
+    // Check if agent is paused and wait for resume
+    if (this.agentController && this.agentController.isPaused()) {
+      Logger.debug('[NeuroOrchestrator] Agent is paused, waiting for resume...');
+      this.emit('taskQueued', { input: input.substring(0, 50), sessionId });
+      await this.agentController.waitForResume();
+      Logger.debug('[NeuroOrchestrator] Agent resumed, continuing orchestration');
+    }
+    
     // Prevent concurrent processing
     if (this.isProcessing) {
-      console.error('[NeuroOrchestrator] Concurrent processing blocked');
+      Logger.error('[NeuroOrchestrator] Concurrent processing blocked');
       throw new NeuroError('Already processing', 'CONCURRENT_PROCESS');
     }
 
@@ -3277,17 +3553,17 @@ class NeuroOrchestrator extends EventEmitter {
       this.memory.monitor.startTimer('input_validation');
       
       // Validate input
-      console.log('[NeuroOrchestrator] Validating input...');
+      Logger.debug('[NeuroOrchestrator] Validating input...');
       const sanitizedInput = this.safety.validate(input, {
         user: this.memory.user,
         ...context
       });
-      console.log('[NeuroOrchestrator] Input validated:', sanitizedInput.substring(0, 50));
+      Logger.debug('[NeuroOrchestrator] Input validated (redacted)');
       
       this.memory.monitor.endTimer('input_validation');
 
       // Update state
-      console.log('[NeuroOrchestrator] Setting state to thinking');
+      Logger.debug('[NeuroOrchestrator] Setting state to thinking');
       this._setState('thinking');
       this.emit('stateChange', { state: 'thinking', input: sanitizedInput });
 
@@ -3295,25 +3571,25 @@ class NeuroOrchestrator extends EventEmitter {
       this.memory.monitor.startTimer('memory_loading');
       
       // Load context
-      console.log('[NeuroOrchestrator] Loading memory context');
+      Logger.debug('[NeuroOrchestrator] Loading memory context');
       const memoryContext = this.memory.load();
       
       // Update context from input
-      console.log('[NeuroOrchestrator] Updating context from input');
+      Logger.debug('[NeuroOrchestrator] Updating context from input');
       const analysis = BrainRules.estimateConfidence(sanitizedInput, memoryContext, context);
       this.memory.updateContextFromInput(sanitizedInput, analysis);
       
       // Get conversation context
       const conversation = this.memory.getConversation(sessionId);
-      console.log('[NeuroOrchestrator] Conversation context:', conversation);
+      Logger.debug('[NeuroOrchestrator] Conversation context');
       
       // Get user preferences
       const preferences = this.memory.getPreferencesByCategory('general');
-      console.log('[NeuroOrchestrator] User preferences:', preferences);
+      Logger.debug('[NeuroOrchestrator] User preferences');
       
       // Get relevant context by tags
       const relevantContext = this.memory.getContextByTags(['entity', 'intent', 'temporal']);
-      console.log('[NeuroOrchestrator] Relevant context:', relevantContext);
+      Logger.debug('[NeuroOrchestrator] Relevant context');
       
       this.memory.monitor.endTimer('memory_loading');
 
@@ -3321,7 +3597,7 @@ class NeuroOrchestrator extends EventEmitter {
       let imageData = null;
       let highlights = [];
       if (this.config.enableVision && BrainRules.needsVision(sanitizedInput)) {
-        console.log('[NeuroOrchestrator] Vision needed, requesting screenshot');
+        Logger.debug('[NeuroOrchestrator] Vision needed, requesting screenshot');
         this._setState('viewingImage');
         this.emit('visionRequested', { input: sanitizedInput });
         
@@ -3330,7 +3606,7 @@ class NeuroOrchestrator extends EventEmitter {
           this.memory.monitor.startTimer('vision_capture');
           
           imageData = await VisionEngine.requestScreenshot();
-          console.log('[NeuroOrchestrator] Screenshot captured, size:', imageData.length);
+          Logger.debug('[NeuroOrchestrator] Screenshot captured, size:', imageData.length);
           
           // Analyze image for error patterns and highlights
           const visionAnalysis = await VisionEngine.analyzeImage(imageData, sanitizedInput);
@@ -3339,7 +3615,7 @@ class NeuroOrchestrator extends EventEmitter {
           // Show highlights on screen
           if (highlights.length > 0 && this.ui) {
             this.ui.showOverlay(highlights, { autoHide: false });
-            console.log('[NeuroOrchestrator] Showing highlights:', highlights);
+            Logger.debug('[NeuroOrchestrator] Showing highlights');
           }
           
           this.memory.storeShort({
@@ -3352,14 +3628,14 @@ class NeuroOrchestrator extends EventEmitter {
           
           this.memory.monitor.endTimer('vision_capture');
         } catch (error) {
-          console.warn('[NeuroOrchestrator] Vision failed:', error.message);
+          Logger.warn('[NeuroOrchestrator] Vision failed:', error.message);
           this.emit('visionFailed', error);
           // Continue without vision
         }
       }
 
       // Analyze confidence
-      console.log('[NeuroOrchestrator] Analyzing confidence');
+      Logger.debug('[NeuroOrchestrator] Analyzing confidence');
       const confidenceAnalysis = BrainRules.estimateConfidence(sanitizedInput, memoryContext, context);
       
       // Enhanced analysis with context
@@ -3370,10 +3646,10 @@ class NeuroOrchestrator extends EventEmitter {
         relevantContext: relevantContext,
         sessionId: sessionId
       };
-      console.log('[NeuroOrchestrator] Enhanced analysis:', enhancedAnalysis);
+      Logger.debug('[NeuroOrchestrator] Enhanced analysis');
       const fixable = BrainRules.isFixable(sanitizedInput);
       const intent = BrainRules.extractIntent(sanitizedInput);
-      console.log('[NeuroOrchestrator] Analysis:', { score: confidenceAnalysis.score, fixable, intent });
+      Logger.debug('[NeuroOrchestrator] Analysis');
       
       // Store user preferences based on interaction
       if (intent.includes('bug')) {
@@ -3391,20 +3667,20 @@ class NeuroOrchestrator extends EventEmitter {
         fixable,
         context: { ...context, intent }
       });
-      console.log('[NeuroOrchestrator] Should ask user:', shouldAsk);
+      Logger.debug('[NeuroOrchestrator] Should ask user:', shouldAsk);
 
       // Ask user if needed
       let clarification = null;
       if (shouldAsk && this.ui) {
-        console.log('[NeuroOrchestrator] Requesting user clarification');
+        Logger.debug('[NeuroOrchestrator] Requesting user clarification');
         this._setState('asking');
         const question = this._generateQuestion(sanitizedInput, confidenceAnalysis, intent);
         const options = this._generateOptions(intent);
-        console.log('[NeuroOrchestrator] Question:', question, 'Options:', options);
+        Logger.debug('[NeuroOrchestrator] Question');
         
         try {
           clarification = await this.ui.askQuestion(question, options);
-          console.log('[NeuroOrchestrator] User clarification:', clarification);
+          Logger.debug('[NeuroOrchestrator] User clarification');
           this.memory.storeShort({
             type: 'clarification',
             question,
@@ -3419,7 +3695,7 @@ class NeuroOrchestrator extends EventEmitter {
       }
 
       // Generate response
-      console.log('[NeuroOrchestrator] Generating response');
+      Logger.debug('[NeuroOrchestrator] Generating response');
       this._setState('writing');
       
       // Performance monitoring: Response generation
@@ -3436,12 +3712,12 @@ class NeuroOrchestrator extends EventEmitter {
         context,
         sessionId
       });
-      console.log('[NeuroOrchestrator] Response generated:', response.substring(0, 100));
+      Logger.debug('[NeuroOrchestrator] Response generated (redacted)');
       
       this.memory.monitor.endTimer('response_generation');
 
       // Store in memory
-      console.log('[NeuroOrchestrator] Storing in memory');
+      Logger.debug('[NeuroOrchestrator] Storing in memory');
       this.memory.storeShort({
         type: 'interaction',
         input: sanitizedInput,
@@ -3479,11 +3755,11 @@ class NeuroOrchestrator extends EventEmitter {
           highlights: highlights,
           sessionId: sessionId
         });
-        console.log('[NeuroOrchestrator] Stored in long-term memory');
+        Logger.debug('[NeuroOrchestrator] Stored in long-term memory');
       }
 
       // Update state
-      console.log('[NeuroOrchestrator] Completing orchestration');
+      Logger.debug('[NeuroOrchestrator] Completing orchestration');
       this._setState('success', { message: 'Complete' });
       
       // Performance monitoring: Complete
@@ -3519,7 +3795,7 @@ class NeuroOrchestrator extends EventEmitter {
           breakdown: this.memory.monitor.getMetrics().timers
         }
       };
-      console.log('[NeuroOrchestrator] Orchestration complete:', result);
+      Logger.debug('[NeuroOrchestrator] Orchestration complete');
       
       // Developer tools: Record completion
       if (this.developerTools.recorder) {
@@ -3535,7 +3811,7 @@ class NeuroOrchestrator extends EventEmitter {
       if (this.ui && highlights.length > 0) {
         setTimeout(() => {
           this.ui.hideOverlay();
-          console.log('[NeuroOrchestrator] Overlay hidden');
+          Logger.debug('[NeuroOrchestrator] Overlay hidden');
         }, 2000);
       }
       
@@ -3559,7 +3835,7 @@ class NeuroOrchestrator extends EventEmitter {
       );
     } finally {
       this.isProcessing = false;
-      console.log('[NeuroOrchestrator] Processing flag reset');
+      Logger.debug('[NeuroOrchestrator] Processing flag reset');
     }
   }
 
@@ -3654,12 +3930,12 @@ class NeuroOrchestrator extends EventEmitter {
   }
 
   async _generateResponse(data) {
-    console.log('[NeuroOrchestrator] Generating response with data:', {
-      input: data.input.substring(0, 50),
-      clarification: data.clarification,
+    Logger.debug('[NeuroOrchestrator] Generating response with data', {
+      input: typeof data.input === 'string' ? data.input.substring(0, 50) : null,
+      clarification: Boolean(data.clarification),
       hasVision: !!data.imageData,
       hasHighlights: !!data.highlights,
-      confidence: data.analysis.score,
+      confidence: data.analysis?.score ?? null,
       intent: data.intent,
       sessionId: data.sessionId
     });
@@ -3703,7 +3979,7 @@ class NeuroOrchestrator extends EventEmitter {
     // Simulate async processing
     await new Promise(resolve => setTimeout(resolve, 100));
 
-    console.log('[NeuroOrchestrator] Response generated successfully');
+    Logger.debug('[NeuroOrchestrator] Response generated successfully');
     return response;
   }
 
@@ -4060,22 +4336,605 @@ if (typeof module !== 'undefined' && module.exports) {
   };
 }
 
-// Browser global
+// Browser global - expose a single namespace to avoid global pollution
 if (typeof window !== 'undefined') {
-  window.NeuroOrchestrator = NeuroOrchestrator;
-  window.MemoryManager = MemoryManager;
-  window.SafetyEngine = SafetyEngine;
-  window.BrainRules = BrainRules;
-  window.UIManager = UIManager;
-  window.VisionEngine = VisionEngine;
-  window.EventEmitter = EventEmitter;
-  window.NeuroError = NeuroError;
-  window.SecurityError = SecurityError;
-  window.ValidationError = ValidationError;
-  // New classes for enhanced features
-  window.PerformanceCache = PerformanceCache;
-  window.PerformanceMonitor = PerformanceMonitor;
-  window.DeveloperTools = DeveloperTools;
-  window.PerformanceProfiler = PerformanceProfiler;
-  window.InteractionRecorder = InteractionRecorder;
+  (function(){
+    const previous = window.Neuro || null;
+    const Neuro = window.Neuro = window.Neuro || {};
+
+    // Main entry point
+    Neuro.Orchestrator = Neuro.Orchestrator || NeuroOrchestrator;
+
+    // Optionally expose helpers under a tools object to reduce global names
+    Neuro.tools = Object.assign(Neuro.tools || {}, {
+      MemoryManager,
+      SafetyEngine,
+      BrainRules,
+      UIManager,
+      VisionEngine,
+      EventEmitter,
+      NeuroError,
+      SecurityError,
+      ValidationError,
+      PerformanceCache,
+      PerformanceMonitor,
+      DeveloperTools,
+      PerformanceProfiler,
+      InteractionRecorder
+    });
+
+    // noConflict restores previous window.Neuro
+    Neuro.noConflict = function() {
+      if (previous === null) {
+        delete window.Neuro;
+      } else {
+        window.Neuro = previous;
+      }
+      return Neuro;
+    };
+  })();
+}
+
+// ----------------- QUICK VALIDATION -----------------
+class QuickValidator {
+  static validateEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return {
+      valid: emailRegex.test(email),
+      value: email,
+      type: 'email'
+    };
+  }
+
+  static validateURL(url) {
+    try {
+      const urlObj = new URL(url);
+      return {
+        valid: ['http:', 'https:'].includes(urlObj.protocol),
+        value: url,
+        type: 'url',
+        protocol: urlObj.protocol.replace(':', ''),
+        domain: urlObj.hostname
+      };
+    } catch (e) {
+      return {
+        valid: false,
+        value: url,
+        type: 'url',
+        error: e.message
+      };
+    }
+  }
+
+  static validateJSON(jsonString) {
+    try {
+      const parsed = JSON.parse(jsonString);
+      return {
+        valid: true,
+        value: parsed,
+        type: 'json',
+        length: jsonString.length
+      };
+    } catch (e) {
+      return {
+        valid: false,
+        value: jsonString,
+        type: 'json',
+        error: e.message
+      };
+    }
+  }
+
+  static validateOutput(value, type) {
+    switch (type.toLowerCase()) {
+      case 'email':
+        return this.validateEmail(value);
+      case 'url':
+        return this.validateURL(value);
+      case 'json':
+        return this.validateJSON(value);
+      default:
+        return {
+          valid: false,
+          value: value,
+          type: type,
+          error: `Unknown validation type: ${type}`
+        };
+    }
+  }
+
+  static validateMultiple(outputs) {
+    const results = {};
+    for (const [key, { value, type }] of Object.entries(outputs)) {
+      results[key] = this.validateOutput(value, type);
+    }
+    return results;
+  }
+}
+
+// ----------------- BATCH PROCESSING -----------------
+class BatchProcessor {
+  constructor(orchestrator, options = {}) {
+    this.orchestrator = orchestrator;
+    this.options = {
+      batchSize: 5,
+      concurrency: 3,
+      retryAttempts: 2,
+      delayBetweenBatches: 1000,
+      ...options
+    };
+    this.batchId = null;
+    this.results = [];
+    this.errors = [];
+    this.processing = false;
+  }
+
+  async processBatch(tasks, options = {}) {
+    const config = { ...this.options, ...options };
+    this.batchId = `batch_${Date.now()}`;
+    this.results = [];
+    this.errors = [];
+    this.processing = true;
+
+    Logger.debug(`[BatchProcessor] Starting batch ${this.batchId} with ${tasks.length} tasks`);
+    this.orchestrator.emit('batchStarted', {
+      batchId: this.batchId,
+      taskCount: tasks.length,
+      config
+    });
+
+    try {
+      const batches = this._createBatches(tasks, config.batchSize);
+      let batchIndex = 0;
+
+      for (const batch of batches) {
+        batchIndex++;
+        Logger.debug(`[BatchProcessor] Processing batch ${batchIndex}/${batches.length}`);
+        
+        const batchResults = await this._processBatch(batch, config);
+        this.results.push(...batchResults.completed);
+        this.errors.push(...batchResults.failed);
+
+        if (batchIndex < batches.length && config.delayBetweenBatches > 0) {
+          await this._delay(config.delayBetweenBatches);
+        }
+      }
+
+      const summary = {
+        batchId: this.batchId,
+        totalTasks: tasks.length,
+        completed: this.results.length,
+        failed: this.errors.length,
+        successRate: ((this.results.length / tasks.length) * 100).toFixed(2) + '%'
+      };
+
+      this.orchestrator.emit('batchCompleted', summary);
+      Logger.debug(`[BatchProcessor] Batch ${this.batchId} completed`);
+
+      return {
+        batchId: this.batchId,
+        results: this.results,
+        errors: this.errors,
+        summary
+      };
+
+    } catch (error) {
+      console.error(`[BatchProcessor] Batch ${this.batchId} failed:`, error);
+      this.orchestrator.emit('batchFailed', { batchId: this.batchId, error });
+      throw error;
+    } finally {
+      this.processing = false;
+    }
+  }
+
+  async _processBatch(batch, config) {
+    const results = { completed: [], failed: [] };
+    const semaphore = new Semaphore(config.concurrency);
+
+    const promises = batch.map(async (task, index) => {
+      await semaphore.acquire();
+      
+      try {
+        const result = await this._executeTask(task, config);
+        results.completed.push({
+          index,
+          task,
+          result,
+          timestamp: Date.now()
+        });
+      } catch (error) {
+        results.failed.push({
+          index,
+          task,
+          error: error.message,
+          timestamp: Date.now()
+        });
+      } finally {
+        semaphore.release();
+      }
+    });
+
+    await Promise.all(promises);
+    return results;
+  }
+
+  async _executeTask(task, config) {
+    let attempts = 0;
+    
+    while (attempts <= config.retryAttempts) {
+      try {
+        // Check if agent is paused
+        if (this.orchestrator.agentController && this.orchestrator.agentController.isPaused()) {
+          await this.orchestrator.agentController.waitForResume();
+        }
+
+        const result = await this.orchestrator.orchestrate(task.input, task.context);
+        return result;
+      } catch (error) {
+        attempts++;
+        if (attempts > config.retryAttempts) {
+          throw error;
+        }
+        
+        console.warn(`[BatchProcessor] Task failed (attempt ${attempts}), retrying...`, error.message);
+        await this._delay(1000 * attempts); // Exponential backoff
+      }
+    }
+  }
+
+  _createBatches(tasks, batchSize) {
+    const batches = [];
+    for (let i = 0; i < tasks.length; i += batchSize) {
+      batches.push(tasks.slice(i, i + batchSize));
+    }
+    return batches;
+  }
+
+  _delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  getBatchStatus() {
+    return {
+      batchId: this.batchId,
+      processing: this.processing,
+      resultsCount: this.results.length,
+      errorsCount: this.errors.length,
+      results: this.results,
+      errors: this.errors
+    };
+  }
+
+  cancelBatch() {
+    if (!this.processing) {
+      Logger.debug('[BatchProcessor] No active batch to cancel');
+      return false;
+    }
+    
+    this.processing = false;
+    this.orchestrator.emit('batchCancelled', { batchId: this.batchId });
+    console.log(`[BatchProcessor] Batch ${this.batchId} cancelled`);
+    return true;
+  }
+}
+
+class Semaphore {
+  constructor(maxConcurrency) {
+    this.maxConcurrency = maxConcurrency;
+    this.currentConcurrency = 0;
+    this.waitQueue = [];
+  }
+
+  async acquire() {
+    if (this.currentConcurrency < this.maxConcurrency) {
+      this.currentConcurrency++;
+      return;
+    }
+
+    return new Promise(resolve => {
+      this.waitQueue.push(resolve);
+    });
+  }
+
+  release() {
+    this.currentConcurrency--;
+    
+    if (this.waitQueue.length > 0) {
+      const resolve = this.waitQueue.shift();
+      this.currentConcurrency++;
+      resolve();
+    }
+  }
+}
+
+// ----------------- STREAMING RESPONSES -----------------
+class StreamingResponse {
+  constructor(orchestrator, options = {}) {
+    this.orchestrator = orchestrator;
+    this.options = {
+      chunkSize: 100,
+      delay: 50,
+      enableBuffering: true,
+      bufferSize: 500,
+      ...options
+    };
+    this.buffer = '';
+    this.isStreaming = false;
+    this.streamId = null;
+    this.onStream = options.onStream || null;
+  }
+
+  async streamResponse(input, context = {}) {
+    this.streamId = `stream_${Date.now()}`;
+    this.isStreaming = true;
+    this.buffer = '';
+    
+    console.log(`[StreamingResponse] Starting stream ${this.streamId}`);
+    this.orchestrator.emit('streamStarted', { streamId: this.streamId, input });
+
+    try {
+      // Generate response chunks
+      const response = await this.orchestrator.orchestrate(input, context);
+      const chunks = this._createChunks(response.response || response);
+      
+      for (let i = 0; i < chunks.length; i++) {
+        const chunk = chunks[i];
+        this.buffer += chunk;
+        
+        const chunkData = {
+          streamId: this.streamId,
+          chunkIndex: i,
+          chunk: chunk,
+          buffer: this.options.enableBuffering ? this.buffer : null,
+          totalChunks: chunks.length,
+          completed: i === chunks.length - 1,
+          timestamp: Date.now()
+        };
+
+        // Emit stream event
+        if (this.onStream) {
+          this.onStream(chunkData);
+        }
+        this.orchestrator.emit('streamChunk', chunkData);
+
+        // Delay between chunks
+        if (i < chunks.length - 1) {
+          await this._delay(this.options.delay);
+        }
+      }
+
+      const finalData = {
+        streamId: this.streamId,
+        finalResponse: response,
+        buffer: this.buffer,
+        totalChunks: chunks.length,
+        timestamp: Date.now()
+      };
+
+      this.orchestrator.emit('streamCompleted', finalData);
+      console.log(`[StreamingResponse] Stream ${this.streamId} completed`);
+
+      return {
+        streamId: this.streamId,
+        finalResponse: response,
+        buffer: this.buffer,
+        chunks: chunks.length
+      };
+
+    } catch (error) {
+      console.error(`[StreamingResponse] Stream ${this.streamId} failed:`, error);
+      this.orchestrator.emit('streamFailed', { streamId: this.streamId, error });
+      throw error;
+    } finally {
+      this.isStreaming = false;
+    }
+  }
+
+  _createChunks(text, chunkSize = this.options.chunkSize) {
+    const chunks = [];
+    for (let i = 0; i < text.length; i += chunkSize) {
+      chunks.push(text.slice(i, i + chunkSize));
+    }
+    return chunks;
+  }
+
+  _delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  getStreamStatus() {
+    return {
+      streamId: this.streamId,
+      isStreaming: this.isStreaming,
+      bufferLength: this.buffer.length,
+      bufferSize: this.options.bufferSize
+    };
+  }
+
+  cancelStream() {
+    if (!this.isStreaming) {
+      console.log('[StreamingResponse] No active stream to cancel');
+      return false;
+    }
+    
+    this.isStreaming = false;
+    this.buffer = '';
+    this.orchestrator.emit('streamCancelled', { streamId: this.streamId });
+    console.log(`[StreamingResponse] Stream ${this.streamId} cancelled`);
+    return true;
+  }
+}
+
+// ----------------- ENHANCED NEURO ORCHESTRATOR -----------------
+// Extend the existing NeuroOrchestrator class with new features
+
+// Store original constructor
+const OriginalNeuroOrchestrator = NeuroOrchestrator;
+
+// Enhanced constructor
+function EnhancedNeuroOrchestrator(container, options = {}) {
+  // Call original constructor
+  OriginalNeuroOrchestrator.call(this, container, options);
+  
+  // Initialize new features
+  this.agentController = new AgentController(this);
+  this.batchProcessor = new BatchProcessor(this, options.batchConfig || {});
+  this.streamingResponse = new StreamingResponse(this, options.streamingConfig || {});
+  
+  // Enhanced configuration
+  this.config = {
+    ...this.config,
+    batchConfig: options.batchConfig || {},
+    streamingConfig: options.streamingConfig || {},
+    validationConfig: options.validationConfig || {},
+    pauseResumeConfig: options.pauseResumeConfig || {}
+  };
+  
+  Logger.debug('[EnhancedNeuroOrchestrator] Enhanced features initialized');
+}
+
+// Inherit from original
+EnhancedNeuroOrchestrator.prototype = Object.create(OriginalNeuroOrchestrator.prototype);
+EnhancedNeuroOrchestrator.prototype.constructor = EnhancedNeuroOrchestrator;
+
+// Add new methods to EnhancedNeuroOrchestrator prototype
+
+// Agent Pause/Resume methods
+EnhancedNeuroOrchestrator.prototype.pause = function() {
+  this.agentController.pause();
+};
+
+EnhancedNeuroOrchestrator.prototype.resume = function() {
+  this.agentController.resume();
+};
+
+EnhancedNeuroOrchestrator.prototype.isPaused = function() {
+  return this.agentController.isPaused();
+};
+
+EnhancedNeuroOrchestrator.prototype.getPauseStatus = function() {
+  return this.agentController.getQueueStatus();
+};
+
+// Quick Validation methods
+EnhancedNeuroOrchestrator.prototype.validateOutput = function(value, type) {
+  return QuickValidator.validateOutput(value, type);
+};
+
+EnhancedNeuroOrchestrator.prototype.validateMultipleOutputs = function(outputs) {
+  return QuickValidator.validateMultiple(outputs);
+};
+
+EnhancedNeuroOrchestrator.prototype.validateEmail = function(email) {
+  return QuickValidator.validateEmail(email);
+};
+
+EnhancedNeuroOrchestrator.prototype.validateURL = function(url) {
+  return QuickValidator.validateURL(url);
+};
+
+EnhancedNeuroOrchestrator.prototype.validateJSON = function(jsonString) {
+  return QuickValidator.validateJSON(jsonString);
+};
+
+// Batch Processing methods
+EnhancedNeuroOrchestrator.prototype.processBatch = function(tasks, options = {}) {
+  return this.batchProcessor.processBatch(tasks, options);
+};
+
+EnhancedNeuroOrchestrator.prototype.getBatchStatus = function() {
+  return this.batchProcessor.getBatchStatus();
+};
+
+EnhancedNeuroOrchestrator.prototype.cancelBatch = function() {
+  return this.batchProcessor.cancelBatch();
+};
+
+// Streaming Response methods
+EnhancedNeuroOrchestrator.prototype.streamResponse = function(input, context = {}, options = {}) {
+  const streamingConfig = { ...this.config.streamingConfig, ...options };
+  const streamingResponse = new StreamingResponse(this, streamingConfig);
+  return streamingResponse.streamResponse(input, context);
+};
+
+EnhancedNeuroOrchestrator.prototype.getStreamStatus = function() {
+  return this.streamingResponse.getStreamStatus();
+};
+
+EnhancedNeuroOrchestrator.prototype.cancelStream = function() {
+  return this.streamingResponse.cancelStream();
+};
+
+// Enhanced orchestrate method with pause/resume support
+EnhancedNeuroOrchestrator.prototype.orchestrate = async function(input, context = {}) {
+  // Check if paused before starting
+  if (this.agentController.isPaused()) {
+    Logger.debug('[EnhancedNeuroOrchestrator] Task queued due to pause');
+    await this.agentController.waitForResume();
+  }
+
+  // Call original orchestrate method
+  return await OriginalNeuroOrchestrator.prototype.orchestrate.call(this, input, context);
+};
+
+// Factory method for enhanced orchestrator
+EnhancedNeuroOrchestrator.create = function(container, options = {}) {
+  return new EnhancedNeuroOrchestrator(container, options);
+};
+
+// ----------------- EXPORTS -----------------
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    NeuroOrchestrator: EnhancedNeuroOrchestrator,
+    MemoryManager,
+    SafetyEngine,
+    BrainRules,
+    UIManager,
+    VisionEngine,
+    EventEmitter,
+    NeuroError,
+    SecurityError,
+    ValidationError,
+    // New classes for enhanced features
+    PerformanceCache,
+    PerformanceMonitor,
+    DeveloperTools,
+    PerformanceProfiler,
+    InteractionRecorder,
+    // New feature classes
+    AgentController,
+    QuickValidator,
+    BatchProcessor,
+    StreamingResponse,
+    Semaphore
+  };
+}
+
+// Browser global: attach enhanced orchestrator to the Neuro namespace
+if (typeof window !== 'undefined') {
+  (function(){
+    const Neuro = window.Neuro = window.Neuro || {};
+    Neuro.EnhancedOrchestrator = Neuro.EnhancedOrchestrator || EnhancedNeuroOrchestrator;
+    Neuro.tools = Object.assign(Neuro.tools || {}, {
+      MemoryManager,
+      SafetyEngine,
+      BrainRules,
+      UIManager,
+      VisionEngine,
+      EventEmitter,
+      NeuroError,
+      SecurityError,
+      ValidationError,
+      PerformanceCache,
+      PerformanceMonitor,
+      DeveloperTools,
+      PerformanceProfiler,
+      InteractionRecorder,
+      AgentController,
+      QuickValidator,
+      BatchProcessor,
+      StreamingResponse,
+      Semaphore
+    });
+  })();
 }
